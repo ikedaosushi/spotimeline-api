@@ -100,11 +100,9 @@ WSGI_APPLICATION = 'spotimeline.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 if os.environ['SPOTIMELINE_ENV'] == "heroku":
-    db_from_env = dj_database_url.config(conn_max_age=600, ssl_require=True)
     DATABASES = {
-        'default': db_from_env
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
     }
-    # DATABASES['default'].update(db_from_env)
 else:
     DATABASES = {
         'default': {
