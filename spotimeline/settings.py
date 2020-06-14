@@ -14,7 +14,7 @@ SECRET_KEY = 'r3+$wti2%xz2i1mt!b&eeeai(%4*t#hulpzkg2m&hle(&v8#!0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "spotimeline-api.herokuapp.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "songline-api.herokuapp.com"]
 
 
 # Application definition
