@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
+from datetime import datetime, timedelta
+from social_django.utils import load_strategy
 from rest_framework.authtoken.models import Token
 from rest_framework import (response, permissions, views, generics, status)
 import spotipy
@@ -27,9 +29,30 @@ def auth_ping(request):
 class TimelineViewSet(views.APIView, LoginRequiredMixin):
     def get(self, request):
         me = request.user
-        queryset = Track.objects.filter(user__in=[follow.following_user for follow in Follow.objects.filter(user=me)])
+        queryset = Track.objects.filter(user__in=[me] + [follow.following_user for follow in Follow.objects.filter(user=me)]).order_by('-played_at')
         serializer = TrackListSerializer(queryset)
-        return response.Response(serializer.data, status.HTTP_200_OK)
+        data = serializer.data
+        user_set = {User.objects.get(id=d["user"]) for d in data}
+        user_infos = {}
+        for user in user_set:
+            if user.social_auth.exists():
+                social = user.social_auth.get(provider='spotify')
+                sp = self._get_spotipy(social)
+                user_info = sp.current_user()
+                user_info["image"] = user_info["images"][0]["url"]
+                user_infos[user.id] = user_info
+        for d in data:
+            d['user_info'] = user_infos[d["user"]]
+        return response.Response(data, status.HTTP_200_OK)
+
+    def _get_spotipy(self, social):
+        expired_time = datetime.fromtimestamp(social.extra_data['auth_time']) + timedelta(minutes=30)
+        if expired_time < datetime.now():
+            social.refresh_token(load_strategy())
+
+        access_token = social.get_access_token(load_strategy())
+        sp = spotipy.Spotify(auth=access_token)
+        return sp
 
 
 class MeViewSet(views.APIView, LoginRequiredMixin):
@@ -37,8 +60,10 @@ class MeViewSet(views.APIView, LoginRequiredMixin):
         me = request.user
         access_token = me.social_auth.get(provider='spotify').extra_data['access_token']
         sp = spotipy.Spotify(auth=access_token)
+        user_info = sp.current_user()
+        user_info["image"] = user_info["images"][0]["url"]
         
-        return response.Response(sp.current_user(), status.HTTP_200_OK)
+        return response.Response(user_info, status.HTTP_200_OK)
 
 class CurrentPlayingViewSet(views.APIView, LoginRequiredMixin):
     def get(self, request):

@@ -32,11 +32,13 @@ from django.urls import reverse
 #     post_connected = models.ForeignKey(Post, on_delete=models.CASCADE)
 
 class Track(models.Model):
+    id = models.AutoField(primary_key=True)
     track_id = models.TextField(max_length=128)
     name =  models.TextField(max_length=128)
     artist_id =  models.TextField(max_length=128)
     artist_name =  models.TextField(max_length=128)
     album_id =  models.TextField(max_length=128)
+    album_image_url =  models.URLField()
     album_name =  models.TextField(max_length=128)
     popularity = models.IntegerField()
     url = models.URLField()
@@ -47,4 +49,4 @@ class Track(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.played_at} {self.user.first_name} {self.artist_name} {self.name}"
+        return f"{self.id} {self.played_at} {self.user.first_name} {self.artist_name} {self.name}"

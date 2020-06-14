@@ -14,7 +14,6 @@ class FetchTracks(CronJobBase):
     code = 'track.fetch_tracks'
 
     def do(self):
-        print("hello")
         logging.info("start")
         try:
             self._run()
@@ -58,6 +57,7 @@ class FetchTracks(CronJobBase):
                 artist_name=track_dic['track']['artists'][0]['name'],
                 album_id=track_dic['track']['album']['id'],
                 album_name=track_dic['track']['album']['name'],
+                album_image_url=track_dic['track']['album']['images'][0]['url'],
                 popularity=track_dic['track']['popularity'],
                 url=track_dic['track']['href'],
                 preview_url=track_dic['track']['preview_url'],
