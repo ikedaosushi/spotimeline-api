@@ -65,6 +65,10 @@ class MeViewSet(views.APIView, LoginRequiredMixin):
         
         return response.Response(user_info, status.HTTP_200_OK)
 
+class UserListAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 class CurrentPlayingViewSet(views.APIView, LoginRequiredMixin):
     def get(self, request):
         me = request.user
